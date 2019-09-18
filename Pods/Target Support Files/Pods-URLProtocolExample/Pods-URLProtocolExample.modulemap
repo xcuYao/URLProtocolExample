@@ -1,0 +1,6 @@
+framework module Pods_URLProtocolExample {
+  umbrella header "Pods-URLProtocolExample-umbrella.h"
+
+  export *
+  module * { export * }
+}
