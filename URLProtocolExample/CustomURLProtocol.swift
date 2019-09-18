@@ -100,7 +100,6 @@ class CustomURLProtocol: URLProtocol {
 }
 
 extension CustomURLProtocol: URLSessionDataDelegate, URLSessionTaskDelegate {
-
     /// URLSession 收到响应之后的处理
     /// 这里持有一个response的引用 然后调用client的didReceive方法 并且不缓存数据
     /// - Parameters:
@@ -119,7 +118,6 @@ extension CustomURLProtocol: URLSessionDataDelegate, URLSessionTaskDelegate {
         self.urlResponse = response
         completionHandler(.allow)
     }
-
     /// URLSession 收到数据之后的处理
     /// 因为数据可能不是一次性回来的 所以依次添加到receivedData中 然后调用client的didLoad方法
     /// - Parameters:
@@ -134,7 +132,6 @@ extension CustomURLProtocol: URLSessionDataDelegate, URLSessionTaskDelegate {
         }
         receivedData?.append(data)
     }
-
     /// URLSession 任务完成之后的处理
     /// 任务结束 失败了调用 client的didFailWithError方法 成功了调用urlProtocolDidFinishLoading方法
     /// - Parameters:
