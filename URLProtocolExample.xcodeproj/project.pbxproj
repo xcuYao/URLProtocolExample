@@ -17,6 +17,7 @@
 		BD284A172330F6F500E35015 /* NetworkCollecter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD284A162330F6F500E35015 /* NetworkCollecter.swift */; };
 		BD284A192331D1F500E35015 /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD284A182331D1F500E35015 /* WebViewController.swift */; };
 		BD284A1B2331D33000E35015 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD284A1A2331D33000E35015 /* WebKit.framework */; };
+		BDA6E1482334A77C00218393 /* TestA.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA6E1472334A77C00218393 /* TestA.swift */; };
 		BDB7495323323E8800FAC5F1 /* UIWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDB7495223323E8800FAC5F1 /* UIWebViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,7 @@
 		BD284A162330F6F500E35015 /* NetworkCollecter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkCollecter.swift; sourceTree = "<group>"; };
 		BD284A182331D1F500E35015 /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		BD284A1A2331D33000E35015 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		BDA6E1472334A77C00218393 /* TestA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestA.swift; sourceTree = "<group>"; };
 		BDB7495223323E8800FAC5F1 /* UIWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIWebViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -100,6 +102,7 @@
 				BD284A162330F6F500E35015 /* NetworkCollecter.swift */,
 				BD284A182331D1F500E35015 /* WebViewController.swift */,
 				BDB7495223323E8800FAC5F1 /* UIWebViewController.swift */,
+				BDA6E1472334A77C00218393 /* TestA.swift */,
 			);
 			path = URLProtocolExample;
 			sourceTree = "<group>";
@@ -224,6 +227,7 @@
 				BD284A052330D20700E35015 /* ViewController.swift in Sources */,
 				BD284A032330D20700E35015 /* AppDelegate.swift in Sources */,
 				BD284A192331D1F500E35015 /* WebViewController.swift in Sources */,
+				BDA6E1482334A77C00218393 /* TestA.swift in Sources */,
 				BD284A152330D2AD00E35015 /* CustomURLProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -14,17 +14,43 @@ class ViewController: UIViewController {
     private lazy var manager = { () -> SessionManager in
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
-        config.protocolClasses?.insert(CustomURLProtocol.self, at: 0)
+//        config.protocolClasses?.insert(CustomURLProtocol.self, at: 0)
         let manager = Alamofire.SessionManager(configuration: config)
         return manager
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        log.info("View did load")
+//        showMethodList(clazz: URLSession.classForCoder())
+//        showMethodList(clazz: URLSession.self)
+        showMethodList(clazz: TestA.self)
+        showStaticMethodList(clazz: TestA.self)
+    }
+
+    func showMethodList(clazz: AnyClass) {
+        var count: UInt32 = 0
+        guard let methods = class_copyMethodList(clazz, &count) else { return }
+        for i in 0..<Int(count) {
+            let sel = method_getName(methods[i])
+            let name_sel = sel_getName(sel)
+            let name = NSString(utf8String: name_sel) ?? ""
+            log.info("\(clazz) method \(i): \(name)")
+        }
+    }
+
+    func showStaticMethodList(clazz: AnyClass) {
+        var count: UInt32 = 0
+        guard let methods = class_copyMethodList(object_getClass(clazz), &count) else { return }
+        for i in 0..<Int(count) {
+            let sel = method_getName(methods[i])
+            let name_sel = sel_getName(sel)
+            let name = NSString(utf8String: name_sel) ?? ""
+            log.info("\(clazz) static method \(i): \(name)")
+        }
     }
 
     @IBAction func clickAlamofire1(_ sender: Any) {
-
         var url = URLComponents(string: "https://suggest.taobao.com/sug")
         url!.queryItems = [
             URLQueryItem(name: "code", value: "utf-8"),
@@ -38,7 +64,8 @@ class ViewController: UIViewController {
     }
 
     @IBAction func clickAmamofire2(_ sender: Any) {
-
+        let a = TestA(name: "aaa")
+        a.sayName()
     }
 
     @IBAction func clickOrigin1(_ sender: Any) {
@@ -61,8 +88,26 @@ class ViewController: UIViewController {
     }
 
     @IBAction func clickOrigin2(_ sender: Any) {
-
+        TestA.staticSayName()
     }
 
+}
+
+extension ViewController {
+    class func exchangeViewDidLoad() {
+        if self != ViewController.self {
+            return
+        }
+        let orig = #selector(ViewController.viewDidLoad)
+        let alter = #selector(ViewController.customViewDidLoad)
+
+        let result = ViewController.swizzleInstanceMethod(originSelector: orig, alterSelector: alter)
+        log.info("exchangeViewDidLoad \(result)")
+    }
+
+    @objc func customViewDidLoad() {
+        log.info("custom View did load")
+        self.customViewDidLoad()
+    }
 }
 

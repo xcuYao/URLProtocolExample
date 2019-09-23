@@ -39,7 +39,8 @@ class CustomURLProtocol: URLProtocol {
         let reqString = request.url?.absoluteString ?? ""
         log.info("我需要拦截 \(reqString) 吗？")
         if ["http", "https"].contains(scheme) {
-            if URLProtocol.property(forKey: CustomURLProtocol.PropertyKey, in: request) != nil {
+            let p = URLProtocol.property(forKey: CustomURLProtocol.PropertyKey, in: request)
+            if p != nil {
                 log.info("重复拦截了！ \(reqString)")
                 return false
             }
@@ -76,6 +77,7 @@ class CustomURLProtocol: URLProtocol {
         log.info("开始拦截 \(reqString)")
         let newReq = self.request
         if let mutableReq = (self.request as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
+            log.info("记录一下 ")
             URLProtocol.setProperty("true", forKey: CustomURLProtocol.PropertyKey, in: mutableReq)
         }
 
@@ -147,5 +149,110 @@ extension CustomURLProtocol: URLSessionDataDelegate, URLSessionTaskDelegate {
         } else {
             self.client?.urlProtocolDidFinishLoading(self)
         }
+    }
+}
+
+extension URLSession {
+    @objc convenience init(configurationMonitor: URLSessionConfiguration, delegate: URLSessionDelegate?, delegateQueue queue: OperationQueue?) {
+        if configurationMonitor.protocolClasses != nil {
+            configurationMonitor.protocolClasses?.insert(CustomURLProtocol.self, at: 0)
+        } else {
+            configurationMonitor.protocolClasses = [CustomURLProtocol.self]
+        }
+        self.init(configurationMonitor: configurationMonitor, delegate: delegate, delegateQueue: queue)
+    }
+
+    class func hook() -> SwizzledResult {
+        let orig = Selector("initWithConfiguration:delegate:delegateQueue:")
+        let alter = #selector(URLSession.init(configurationMonitor: delegate: delegateQueue:))
+        return URLSession.swizzleInstanceMethod(originSelector: orig, alterSelector: alter)
+    }
+
+    class func open() {
+        let hookResult = hook()
+        if !swizzed && hookResult == .success {
+            swizzed = true
+        } else {
+            log.info("already startd or hook failure")
+        }
+    }
+
+    class func close() {
+        let hookResult = hook()
+        if swizzed && hookResult == .success {
+            swizzed = false
+        } else {
+            log.info("already stoped or hool failure")
+        }
+    }
+
+    private static var swizzedKey: Character = "c"
+    private static var swizzed: Bool {
+        set {
+            objc_setAssociatedObject(self, &swizzedKey, swizzed, .OBJC_ASSOCIATION_ASSIGN)
+        }
+        get {
+            if let result = objc_getAssociatedObject(self, &swizzedKey) as? Bool {
+                return result
+            } else {
+                return false
+            }
+        }
+    }
+}
+
+enum SwizzledResult {
+    case success
+    case originMethodNotFound
+    case alternateMethodNotFound
+}
+
+extension NSObject {
+
+    class func swizzleInstanceMethod(originSelector: Selector, alterSelector: Selector) -> SwizzledResult {
+        return swizzleInstanceMethod(originSelector: originSelector, alterSelector: alterSelector, alterClass: self.classForCoder())
+    }
+
+    class func swizzleClassMethod(originSelector: Selector, alterSelector: Selector) -> SwizzledResult {
+        return swizzleClassMethod(originSelector: originSelector, alterSelector: alterSelector, alterClass: self.classForCoder())
+    }
+
+    class func swizzleInstanceMethod(originSelector: Selector, alterSelector: Selector, alterClass: AnyClass) -> SwizzledResult {
+        return swizzleMethod(originSelector: originSelector, alterSelector: alterSelector, alterClass: alterClass, classMethod: false)
+    }
+
+    class func swizzleClassMethod(originSelector: Selector, alterSelector: Selector, alterClass: AnyClass) -> SwizzledResult {
+        return swizzleMethod(originSelector: originSelector, alterSelector: alterSelector, alterClass: alterClass, classMethod: true)
+    }
+
+    class func swizzleMethod(originSelector: Selector, alterSelector: Selector, alterClass: AnyClass!, classMethod: Bool) -> SwizzledResult {
+        if classMethod {
+            guard let alterClazz = object_getClass(alterClass) else { return .alternateMethodNotFound }
+            guard let originClazz = object_getClass(self.classForCoder())else { return .originMethodNotFound }
+            return swizzleMethod(originClass: originClazz, originSelector: originSelector, alternateClass: alterClazz, alternateSelector: alterSelector)
+        } else {
+            let originClass: AnyClass = self.classForCoder()
+            return swizzleMethod(originClass: originClass, originSelector: originSelector, alternateClass: alterClass, alternateSelector: alterSelector)
+        }
+    }
+
+    class func swizzleMethod(originClass: AnyClass!, originSelector: Selector, alternateClass: AnyClass!, alternateSelector: Selector) -> SwizzledResult {
+        guard let originMethod: Method = class_getInstanceMethod(originClass, originSelector) else {
+            return .originMethodNotFound
+        }
+        guard let altMethod: Method = class_getInstanceMethod(alternateClass, alternateSelector) else {
+            return .alternateMethodNotFound
+        }
+
+        // 1. 判断下原有类中是否有要替换的方法(class_addMethod 来判断 add成功说明没有 add失败 说明有)
+        // 2. add成功的话 就替换实现 add失败就交换实现
+        let didAddMethod = class_addMethod(originClass, originSelector, method_getImplementation(altMethod), method_getTypeEncoding(altMethod))
+        if didAddMethod {
+            class_replaceMethod(originClass, alternateSelector, method_getImplementation(originMethod), method_getTypeEncoding(originMethod))
+        } else {
+            method_exchangeImplementations(originMethod, altMethod)
+        }
+
+        return .success
     }
 }
